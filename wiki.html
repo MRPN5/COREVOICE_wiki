@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COREVOICE BE - 統合版マインクラフト位置連動ボイスチャットアドオン(Proximity Voice Chat Addon)使い方Wiki</title>
+
+    <!-- 💡 【追加】概要欄：狙いたいキーワードを英語・日本語ともに自然に散りばめる -->
+    <meta name="description"
+        content="統合版マインクラフト（Minecraft BE）用位置連動ボイスチャットアドオン「COREVOICE」の公式使い方Wikiです。
+        ゲーム内の距離に応じて声が変わる proximity VC (voice chat addon) の導入手順や各種コマンドの仕様を日本語で分かりやすく解説しています。">
+    <style>
+        :root {
+            --bg-main: #0b0c10;
+            --bg-card: #131520;
+            --bg-code: #07080d;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --accent: #00f2fe;
+            --accent-green: #00ff87;
+            --accent-gradient: linear-gradient(90deg, #00ff87 0%, #00f2fe 100%);
+            --border: #222533;
+            --highlight: #00ff87;
+            --danger: #ff4a6b;
+            --danger-bg: rgba(255, 74, 107, 0.1);
+            --success: #00ff87;
+            --success-bg: rgba(0, 255, 135, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+            letter-spacing: 0.03em;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 60px auto;
+            padding: 0 24px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            margin: 0 0 8px 0;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            /* Safari / 旧Chrome用 */
+            background-clip: text;
+            /* 標準仕様（モダンブラウザ用） */
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        header p {
+            color: var(--text-sub);
+            font-size: 1.15rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        /* モダン・カプセル型タブシステム */
+        .tabs {
+            display: flex;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 6px;
+            border-radius: 12px;
+            margin-bottom: 35px;
+            gap: 6px;
+        }
+
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            padding: 14px 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .tab-button:hover {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-button.active {
+            color: var(--bg-main);
+            background: var(--accent-gradient);
+            box-shadow: 0 4px 20px rgba(0, 242, 254, 0.25);
+        }
+
+        .tab-content {
+            display: none;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 構造化テキストデザイン */
+        h1,
+        h2,
+        h3 {
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .tab-content>h1 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: var(--text-main);
+            font-size: 1.4rem;
+            margin-top: 45px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-content>h2:first-of-type {
+            margin-top: 0;
+        }
+
+        h3 {
+            color: var(--accent);
+            font-size: 1.15rem;
+            margin-top: 30px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            color: var(--text-sub);
+            margin-bottom: 24px;
+        }
+
+        /* リストとインデント構造の洗練 */
+        ul,
+        ol {
+            padding-left: 24px;
+            margin-bottom: 24px;
+        }
+
+        li {
+            margin-bottom: 14px;
+            color: var(--text-main);
+        }
+
+        li strong {
+            color: var(--accent-green);
+        }
+
+        /* マイクラ画像用ショーケーススタイル */
+        img {
+            display: block;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            margin: 16px 0 24px 0;
+            transition: transform 0.3s ease;
+        }
+
+        img:hover {
+            transform: scale(1.01);
+        }
+
+        /* コードブロック & シンタックス */
+        code {
+            background-color: var(--bg-code);
+            color: #ff7597;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: 'Fira Code', Consolas, Monaco, monospace;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 117, 151, 0.15);
+        }
+
+        pre {
+            background-color: var(--bg-code);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            margin: 20px 0;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        pre code {
+            color: #a6e3a1;
+            padding: 0;
+            background: none;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        /* 警告・注意ボックス（ガラスモフィズム調） */
+        .important,
+        .important-box {
+            background-color: var(--danger-bg);
+            border-left: 4px solid var(--danger);
+            padding: 24px;
+            border-radius: 0 12px 12px 0;
+            margin: 35px 0;
+            border-top: 1px solid rgba(255, 74, 107, 0.1);
+            border-right: 1px solid rgba(255, 74, 107, 0.1);
+            border-bottom: 1px solid rgba(255, 74, 107, 0.1);
+        }
+
+        .important strong,
+        .important-box h3 {
+            color: var(--danger) !important;
+            font-size: 1.1rem;
+        }
+
+        /* 正誤判定テキスト */
+        .incorrect {
+            color: var(--danger);
+            font-weight: bold;
+            background-color: rgba(255, 74, 107, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .correct {
+            color: var(--success);
+            font-weight: bold;
+            background-color: rgba(0, 255, 135, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* コマンドバッジ */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-right: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-any {
+            background-color: rgba(0, 242, 254, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+
+        .badge-no {
+            background-color: rgba(148, 163, 184, 0.1);
+            color: var(--text-sub);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        /* 綺麗ですっきりとしたデータテーブル */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.02);
+            color: var(--accent);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            padding: 14px 16px;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+
+        /* スクロールバーのカスタマイズ */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-sub);
+        }
+
+        /* ★ 追加分：インライン調和型のインストールコンテナ ★ */
+        .install-container {
+            background-color: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0 24px 0;
+            text-align: center;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .install-container h3 {
+            color: var(--accent);
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .install-container p {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-gradient);
+            color: var(--bg-main);
+            text-decoration: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.15);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.3);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-btn .icon {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>COREVOICE addon wiki</h1>
+            <p>Minecraft Voice Chat Infrastructure</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'intro')">導入方法</button>
+            <button class="tab-button" onclick="openTab(event, 'commands')">コマンド</button>
+            <button class="tab-button" onclick="openTab(event, 'formula')">vol_formula</button>
+        </div>
+
+        <div id="intro" class="tab-content active">
+            <h2>🚀 システムの始め方</h2>
+            <p>このシステムは、マインクラフト内の位置データとブラウザ（Webサイト）を同期させ、プレイヤー同士の距離に応じたリアルタイムなボイスチャットを実現します。</p>
+
+            <h2>1.配布しているCOREVOICE_public.mcaddonをインポートする</h2>
+
+            <div class="install-container">
+                <h3>COREVOICE BE をインストール</h3>
+                <p>下のボタンを押してダウンロード</p>
+
+                <a href="./files/COREVOICE_public.mcaddon" download="COREVOICE_public.mcaddon" class="download-btn">
+                    <span class="icon"></span> アドオンをダウンロード
+                </a>
+            </div>
+
+            <ol>
+                <img src="images/mcaddon.png" alt="導入手順のスクリーンショット" style="max-width: 100%; height: auto;">
+            </ol>
+
+            <h2>2. ワールドへの参加と/connect</h2>
+            <ol>
+                <li>アドオンが適用されたマインクラフトのワールドに参加します。</li>
+                <li>connectコマンドを打つ「<strong>/connect 36.53.1.137:8080</strong>」</li>
+                <img src="images/connect.png" alt="導入手順のスクリーンショット" style="max-width: 100%; height: auto;">
+                <li>参加すると、サーバーから自動的にプレイヤー専用の<strong>6桁のルームID</strong>が発行され、チャットに通知されます。</li>
+                <img src="images/roomId.png" alt="導入手順のスクリーンショット" style="max-width: 100%; height: auto;">
+            </ol>
+
+            <h2>2. ブラウザでのボイスチャット接続</h2>
+            <ol>
+                <li>スマートフォンまたはPCのブラウザで、ボイスチャットのWebサイトにアクセスします。https://36-53-1-137.sslip.io/</li>
+                <li>サイト上の入力画面で、ゲーム内で発行された<strong>6桁のルームID</strong>を入力します。</li>
+                <img src="images/enterRoom.png" alt="導入手順のスクリーンショット" style="max-width: 100%; height: auto;">
+                <li>自分の名前を選択します。</li>
+                <li><strong>ボイスチャットに参加</strong>を押します。</li>
+                <img src="images/join.png" alt="導入手順のスクリーンショット" style="max-width: 100%; height: auto;">
+            </ol>
+
+            <div class="important">
+                <strong>⚠️ 注意事項：</strong><br>
+                設定で<strong>「websocketを有効にする」をオン</strong>にして、<strong>「暗号化の要求」</strong>をオフにしてください。正常に接続できません。
+                <img src="images/setting.png" alt="導入手順のスクリーンショット" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+
+        <div id="commands" class="tab-content">
+            <h2>🛠 利用可能なコマンド一覧</h2>
+
+            <ul>
+                <li>
+                    <ol>
+                        <code>/vc:template [name:string]</code><br>
+                        設定のテンプレートを呼び出します。
+                        <li><strong>jinro</strong><br>
+                            昼の時聞こえる最大距離30,夜の時11です。スペクテイターモードの時は近くの人とは話せます。</li>
+                        <li><strong>none</strong><br>
+                            聞こえる最大距離30、スペクテイターモードの時は近くの人とは話せます。</li>
+                        これらが利用可能で、デフォルトではnoneです。
+                    </ol>
+                </li>
+                <li>
+                    <ol>
+                        <code>/vc:dict [distance:float]</code><br>
+                        聞こえる最大距離を設定します。デフォルトは30です。
+                    </ol>
+                </li>
+                <li>
+                    <ol>
+                        <code>/vc:spectator [mode:string]</code><br>
+                        スペクテイターの時の設定ができます。
+                        <li><strong>all</strong><br>
+                            距離に関係なく、スペクテイターの人はすべての人の声が聞こえます。</li>
+                        <li><strong>near</strong><br>
+                            スペクテイターの時も聞こえる最大距離の設定に従って声が聞こえます。</li>
+                        <li><strong>none</strong><br>
+                            スペクテイターの時、誰の声も聞こえません。</li>
+                        これらが利用可能で、デフォルトではnearです。
+                    </ol>
+                </li>
+                <li>
+                    <ol>
+                        <code>/vc:setting</code><br>
+                        上記の設定がフォームで一括でできます。
+                    </ol>
+                </li>
+                <li>
+                    <ol>
+                        <code>/vc:jam [PlayerSelector]</code><br>
+                        指定したプレイヤーに通信妨害を起こします。通信妨害を起こされたプレイヤーは強制的にスピーカーミュート状態になります。
+                    </ol>
+                </li>
+            </ul>
+        </div>
+
+        <div id="formula" class="tab-content">
+            <h1>/vc:vol_formula 仕様書</h1>
+            <p>対象プレイヤーのボイスチャットにおける音量計算式・オーディオ制御（JavaScript構文）をゲーム内からリアルタイムに変更・確認するためのコマンドです。</p>
+
+            <h2>1. コマンド構文</h2>
+            <pre><code>/vc:vol_formula &lt;target: プレイヤーセレクター&gt; [formula: 文字列]</code></pre>
+
+            <div style="margin-top: 15px;">
+                <span class="badge badge-any">パーミッションレベル</span> 誰でも実行可能（CommandPermissionLevel.Any）<br><br>
+                <span class="badge badge-no">チートの有効化</span> 必要なし（cheatsRequired: false）
+            </div>
+
+            <h3>引数一覧</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>引数名</th>
+                        <th>必須/任意</th>
+                        <th>型</th>
+                        <th>説明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>target</strong></td>
+                        <td>必須</td>
+                        <td>プレイヤーセレクター</td>
+                        <td>式を設定・確認したい対象プレイヤー（<code>@s</code>、<code>@a</code>、プレイヤー名など）</td>
+                    </tr>
+                    <tr>
+                        <td><strong>formula</strong></td>
+                        <td>任意</td>
+                        <td>文字列 (String)</td>
+                        <td>適用したいJavaScriptの制御式。未指定の場合は現在の設定値をチャットに表示します。</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>📝 2. 式の記述ルール（新仕様）</h2>
+            <p>これからの数式は、ただの単一の計算式ではなく、JavaScriptの構文として<strong>変数への代入式</strong>を記述し、それぞれの命令を<strong>セミコロン <code>;</code>
+                </strong>で区切る必要があります。</p>
+            <ul>
+                <li><strong><code>vol</code> （音量設定）：</strong> 最終的な音量を代入します。<code>0</code> が無音、<code>1</code>
+                    が100%（1を超えても機能しますが、現実的には <code>5</code> 程度が限度です）。</li>
+                <li><strong><code>Spatial_Audio</code> （立体音響制御）：</strong> <code>true</code>
+                    にするとマイクラ内の位置に応じた3D立体音響が有効になり、<code>false</code> にすると2D（全方位一律）の音声になります。</li>
+                <li><strong>セミコロン <code>;</code> の必須化：</strong> <code>vol = ...; Spatial_Audio = ...;</code>
+                    のように、各命令の末尾には必ずセミコロンを付けてください。</li>
+            </ul>
+            <pre><code>vol = linear(30, dist); Spatial_Audio = true;</code></pre>
+
+            <div class="important-box">
+                <h3>⚠️ 3. マイクラコマンド特有の文字列ルール（超重要）</h3>
+                <p>マイクラのコマンド引数に数式を文字列として渡す場合、以下のエスケープルールを厳守する必要があります。</p>
+
+                <p><strong>ルール①：全体を "" で囲む</strong><br>
+                    数式内にスペースやセミコロンが含まれるため、引数の始まりと終わりを必ずダブルクォーテーション <code>""</code> で明示してください。</p>
+                <ul>
+                    <li><span class="incorrect">❌ 誤り:</span>
+                        <code>/vc:vol_formula @s vol = dist &lt; 10 ? 1 : 0; Spatial_Audio = true;</code>
+                    </li>
+                    <li><span class="correct">⭕ 正しい:</span>
+                        <code>/vc:vol_formula @s "vol = dist &lt; 10 ? 1 : 0; Spatial_Audio = true;"</code>
+                    </li>
+                </ul>
+
+                <p><strong>ルール②：式の中で文字列を使う時は ￥（\） でエスケープする</strong><br>
+                    数式（JavaScript）の内部で、特定のタグ名やディメンション名などの「文字列」を指定したい場合は、ダブルクォーテーションの前にバックスラッシュ（環境によっては円マーク）を付けて
+                    <code>\"</code> と記述します。
+                </p>
+                <ul>
+                    <li><span class="incorrect">❌ 誤り:</span>
+                        <code>/vc:vol_formula @s "vol = me.dim === "minecraft:overworld" ? 1 : 0; Spatial_Audio = true;"</code>
+                    </li>
+                    <li><span class="correct">⭕ 正しい:</span>
+                        <code>/vc:vol_formula @s "vol = me.dim === \"minecraft:overworld\" ? 1 : 0; Spatial_Audio = true;"</code>
+                    </li>
+                </ul>
+            </div>
+
+            <h2>4. 式の中で使用できる変数・関数</h2>
+            <p>Webブラウザ側で制御式が実行される際、記述した式の中で以下のオブジェクトやヘルパー関数が自動的に利用可能になります。</p>
+
+            <h3>利用可能な変数</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>変数名</th>
+                        <th>説明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>me</code></td>
+                        <td>自分の情報オブジェクト（<code>me.x</code>, <code>me.y</code>, <code>me.z</code> で座標、<code>me.dim</code>
+                            でディメンション、<code>me.mode</code> でゲームモードを取得。<code>me.hasTag("タグ名")</code> でタグ判定が可能）</td>
+                    </tr>
+                    <tr>
+                        <td><code>other</code></td>
+                        <td>通話相手の情報オブジェクト（プロパティや関数は <code>me</code> と同様）</td>
+                    </tr>
+                    <tr>
+                        <td><code>dist</code></td>
+                        <td>自分と相手の3次元距離（※Y軸の高さは1/2に圧縮されて計算されています）</td>
+                    </tr>
+                    <tr>
+                        <td><code>sameDim</code></td>
+                        <td>自分と相手が同じディメンションにいるかどうかの真偽値（<code>true</code> / <code>false</code>）</td>
+                    </tr>
+                    <tr>
+                        <td><code>setting</code></td>
+                        <td>サーバー側の現在の設定（<code>setting.dict</code> で最大通話距離などを取得可能）</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>プレイヤーオブジェクトのプロパティ</h3>
+            <p><code>me</code>（自分）および <code>other</code>（通話相手）のオブジェクトからは、以下の豊富なゲーム内データを取得して計算に利用できます。</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>オブジェクト・プロパティ</th>
+                        <th>型</th>
+                        <th>説明・取得できるデータ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>me.name</code> / <code>other.name</code></td>
+                        <td>String</td>
+                        <td>プレイヤーの識別名（名前）</td>
+                    </tr>
+                    <tr>
+                        <td><code>me.x</code>, <code>me.y</code>, <code>me.z</code></td>
+                        <td>Number</td>
+                        <td>現在の3次元座標（X, Y, Z）</td>
+                    </tr>
+                    <tr>
+                        <td><code>me.x_rot</code> / <code>me.y_rot</code></td>
+                        <td>Number</td>
+                        <td>プレイヤーの首の角度（X軸回転: 上下 / Y軸回転: 左右）</td>
+                    </tr>
+                    <tr>
+                        <td><code>me.mode</code> / <code>other.mode</code></td>
+                        <td>String</td>
+                        <td>ゲームモード（<code>"Survival"</code>, <code>"Creative"</code>, <code>"Spectator"</code> など）</td>
+                    </tr>
+                    <tr>
+                        <td><code>me.dim</code> / <code>other.dim</code></td>
+                        <td>String</td>
+                        <td>ディメンションID（<code>"minecraft:overworld"</code>, <code>"minecraft:nether"</code>,
+                            <code>"minecraft:the_end"</code>）
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>me.time</code> / <code>other.time</code></td>
+                        <td>Number</td>
+                        <td>ゲーム内の現在時刻（0〜24000のTick値。昼夜の判定などに利用可能）</td>
+                    </tr>
+                    <tr>
+                        <td><code>me.isJamming</code> / <code>other.isJamming</code></td>
+                        <td>Boolean</td>
+                        <td>通信妨害（ジャミング）を受けているかどうかの真偽値（<code>true</code> / <code>false</code>）</td>
+                    </tr>
+                    <tr>
+                        <td><code>me.vol_formula</code></td>
+                        <td>String</td>
+                        <td>そのプレイヤーに現在設定されている数式文字列そのもの</td>
+                    </tr>
+                    <tr>
+                        <td><code>me.tags</code> / <code>other.tags</code></td>
+                        <td>Array</td>
+                        <td>プレイヤーが持っているマイクラの全タグの配列。※特定のタグがあるかは後述の <code>hasTag()</code> メソッドで判定します</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>利用可能なメソッド（関数）</h3>
+            <ul>
+                <li><code>me.hasTag("タグ名")</code> / <code>other.hasTag("タグ名")</code>：対象のプレイヤーが指定したタグを持っている場合に
+                    <code>true</code> を返します。
+                </li>
+                <li><code>linear(max_dist, dist)</code>：距離に応じたシンプルな直線減衰を計算して数値を返す共通ヘルパー関数。</li>
+            </ul>
+
+            <h2>5. 特殊な制御コメント（モード切り替え）</h2>
+            <p>数式内に特定のコメント文字を含めることで、ブラウザ側の制限処理のモードを切り替えることができます。</p>
+            <ul>
+                <li><strong><code>/*none*/</code>
+                        （デフォルト）：</strong><br>アドオンの標準的な距離減衰、人狼テンプレート、観戦者設定、ジャミング（妨害）状態などが全自動で適用されます。</li>
+                <li><strong><code>/*all*/</code>
+                        ：</strong><br>システムのデフォルト制限をすべて無視します。別ディメンション間や、スペクとサバイバルの間、自分がジャミング（妨害）を受けている状態であっても、記述したスクリプトの実行結果（代入された値）がそのまま適用されます。
+                </li>
+                <li><strong>コメントなし：</strong><br>記述した式で音量や立体音響を計算したあと、システム共通の制限（「別ディメンションなら強制終了」「ジャミング中なら強制ミュート」など）が上書きで適用されます。
+                </li>
+            </ul>
+
+            <h2>6. 具体的な使用例（サンプル）</h2>
+
+            <h3>例①：現在の設定を確認する</h3>
+            <p>数式を指定せずに実行すると、対象プレイヤーの現在の設定が <code>/say</code> コマンドでチャット欄に表示されます。</p>
+            <pre><code>/vc:vol_formula @s</code></pre>
+
+            <h3>例②：標準の距離減衰（リセット）</h3>
+            <p>初期状態の自動減衰モードに戻したい場合は <code>/*none*/</code> を書き込みます。</p>
+            <pre><code>/vc:vol_formula @a "/*none*/"</code></pre>
+
+            <h3>例③：無線機（特定のタグ持ち同士はどこにいても2D最大音量、それ以外は立体音響減衰）</h3>
+            <p><code>/*all*/</code> を使用。自分と相手が共に <code>radio</code> タグを持っているなら、距離に関係なく音量を <code>1</code>・立体音響を
+                <code>false</code>（無線風）にし、そうでないなら通常の30マスの立体音響減衰にする例です。
+            </p>
+            <pre><code>/vc:vol_formula @a "/*all*/ vol = me.hasTag(\"radio\") && other.hasTag(\"radio\") ? 1 : linear(30, dist); Spatial_Audio = !(me.hasTag(\"radio\") && other.hasTag(\"radio\"));"</code></pre>
+
+            <h3>例④：ネザーにいる時は最大距離を狭め、立体音響をオフにする（響く洞窟の表現など）</h3>
+            <p>相手がネザー（<code>minecraft:nether</code>）にいる時は、音量を最大10ブロックに狭め、音が回り込んで聞こえるように立体音響を <code>false</code>
+                にする設定例です。</p>
+            <pre><code>/vc:vol_formula @a "vol = other.dim === \"minecraft:nether\" ? linear(10, dist) : linear(30, dist); Spatial_Audio = other.dim === \"minecraft:nether\" ? false : true;"</code></pre>
+        </div>
+    </div>
+
+    <script>
+        // タブ切り替え用のJavaScript
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+
+            // すべてのコンテンツを非表示にする
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+
+            // すべてのボタンの active クラスを外す
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+
+            // 指定されたタブを表示し、ボタンをアクティブにする
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+
+</body>
+
+</html>
